@@ -1,0 +1,2 @@
+initramfs-tools/* usr/share/initramfs-tools/
+scripts/* usr/bin/

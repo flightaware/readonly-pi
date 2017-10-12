@@ -1,0 +1,12 @@
+Source: readonly-pi
+Section: embedded
+Priority: extra
+Maintainer: FlightAware Developers <adsb-devs@flightaware.com>
+Build-Depends: debhelper(>=9)
+Standards-Version: 3.9.3
+Homepage: https://github.com/flightaware
+
+Package: readonly-pi
+Architecture: all
+Depends: initramfs-tools, ${misc:Depends}
+Description: Mount the root FS readonly with a tmpfs overlay on boot

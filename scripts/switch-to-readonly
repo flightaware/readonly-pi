@@ -1,0 +1,63 @@
+#!/bin/sh
+
+UID=$(id -u)
+if [ "$UID" -ne 0 ]
+then
+  echo "Need to be root to run this" >&2
+  exit 1
+fi
+
+if [ ! -f /boot/cmdline.txt ]
+then
+  echo "No /boot/cmdline.txt found, is this a Pi?" >&2
+  exit 1
+fi
+
+was_readonly=0
+newargs=""
+for arg in $(cat /boot/cmdline.txt)
+do
+    case "$arg" in
+        overlay=yes)
+            was_readonly=1
+            ;;
+
+        overlay=*)
+            ;;
+
+        *)
+            newargs="${newargs}${arg} "
+            ;;
+    esac
+done
+
+if [ $was_readonly -eq 1 ]
+then
+    echo "System is already set to readonly mode." >&2
+else
+    echo "${newargs}overlay=yes" >/boot/cmdline.txt.new
+    sync
+    if ! mv /boot/cmdline.txt.new /boot/cmdline.txt
+    then
+        echo "couldn't update /boot/cmdline.txt" >&2
+        exit 2
+    fi
+    sync
+
+    echo "Updated /boot/cmdline.txt for readonly mode." >&2
+fi
+
+if grep -q overlay-root /proc/mounts
+then
+  echo "Already running in readonly mode, no need to reboot." >&2
+else
+    if [ "$1" = "-r" ]
+    then
+        echo "Need to reboot to enable readonly mode. Rebooting now.." >&2
+        /sbin/reboot
+    else
+        echo "Reboot to enable readonly mode." >&2
+    fi
+fi
+
+exit 0
